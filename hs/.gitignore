@@ -2,3 +2,6 @@
 /.ghc.environment*
 /cabal.project
 /nixage.cabal
+.stack-work
+stack.yaml
+result

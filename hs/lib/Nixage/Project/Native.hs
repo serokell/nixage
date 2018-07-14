@@ -13,9 +13,11 @@ module Nixage.Project.Native
 import Data.Map (Map)
 import Data.Text (Text)
 import Data.Void (Void)
+import Universum
 
 import Nixage.Project.Extensible
-import Nixage.Project.Types (NixHash, NixpkgsVersion, StackageVersion, PackageName, PackageVersion, ExternalSource)
+import Nixage.Project.Types ( NixHash, NixpkgsVersion, StackageVersion
+                            , PackageName, PackageVersion, ExternalSource)
 
 
 -- | Nixage native AST marker
@@ -37,9 +39,10 @@ deriving instance Show (ExtraDepVersion AstNixage)
 pattern ProjectNative :: Text
                       -> (Maybe NixpkgsVersion)
                       -> (Maybe StackageVersion)
+                      -> Map PackageName PackageVersion
                       -> Map PackageName (ExtraDepVersion AstNixage)
                       -> Project AstNixage
-pattern ProjectNative r mnv msv mpn = Project () r mnv msv mpn
+pattern ProjectNative r mnv msv mpv mpn = Project () r mnv msv mpv mpn
 
 
 pattern HackageDepVersionNative :: PackageVersion
@@ -48,5 +51,6 @@ pattern HackageDepVersionNative pv = HackageDepVersion () pv
 
 pattern SourceDepVersionNative :: ExternalSource
                                -> NixHash
+                               -> Maybe FilePath
                                -> ExtraDepVersion AstNixage
-pattern SourceDepVersionNative es nh = SourceDepVersion () es nh
+pattern SourceDepVersionNative es nh msd= SourceDepVersion () es nh msd

@@ -9,6 +9,7 @@ default-extensions:
   - GeneralizedNewtypeDeriving
   - LambdaCase
   - NamedFieldPuns
+  - NoImplicitPrelude
   - OverloadedStrings
   - PatternSynonyms
   - RankNTypes
@@ -25,8 +26,11 @@ library:
   dependencies:
     - base
 
+    - aeson
+    - aeson-options
     - containers
     - text
+    - universum
 
 executables:
   nixage:
@@ -35,6 +39,9 @@ executables:
 
     dependencies:
       - base
+
+      - universum
+      - yaml
 
       - nixage
 
