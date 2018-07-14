@@ -28,6 +28,7 @@ let
       nixageProj = nixagePackages proj;
     in
       nixageProj.target // {
+        inherit pkgs nixageProj;
         _pkgs = nixageProj.projPkgs;
         _haskellPackages = nixageProj.haskellPackages;
         _target = nixageProj.target;

@@ -10,7 +10,6 @@ import Nixage.Project.Types ( PackageName, PackageVersion
 import Nixage.Project.Extensible (ExtraDepVersion (..), Project (..))
 import Nixage.Project.Native (AstNixage, ProjectNative)
 
-
 data StackExtraDepVersion =
       StackHackageDepVersion PackageVersion
     | StackGitDepVersion Text Text (Maybe FilePath) -- git, rev, subdir
@@ -43,18 +42,22 @@ instance ToJSON StackCustomSnapshot where
                    ]
 
 -- | Create stack and snapshot yaml files content
-createStackFiles :: StackConfig -> FilePath -> (Value, Value)
-createStackFiles (StackConfig snapshot packages) snapshotPath =
-    (toJSON snapshot, stackYamlBuilder)
+createStackFiles :: StackConfig
+                 -> FilePath       -- ^ Snapshot path
+                 -> FilePath       -- ^ Stack shell path
+                 -> (Value, Value)
+createStackFiles (StackConfig stackCustomSnapshot packages) snapshotPath shellPath =
+    (stack, toJSON stackCustomSnapshot)
   where
-    stackYamlBuilder = object
+    stack = object
         [ "resolver" .= snapshotPath
         , "packages" .= elems packages
-        , "nix" .= nix]
+        , "nix" .= nix
+        ]
 
     nix = object
         [ "enable" .= True
-        , "shell-file" .= ("stack-shell.nix" :: Text)
+        , "shell-file" .= shellPath
         ]
 
 -- | Convert ProjectNative AST to StackConfig
