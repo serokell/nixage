@@ -16,7 +16,9 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 import Universum
 
-import Nixage.Project.Types (NixHash, NixpkgsVersion, StackageVersion, PackageName, PackageVersion, ExternalSource)
+import Nixage.Project.Types ( NixHash, NixpkgsVersion, StackageVersion
+                            , PackageName, PackageVersion, ExternalSource
+                            , PackagePath)
 
 
 -- | Extensible project specification AST
@@ -25,7 +27,7 @@ data Project x = Project
     , pResolver :: Text
     , pNixpkgs  :: Maybe NixpkgsVersion
     , pStackage :: Maybe StackageVersion
-    , pPackages :: Map PackageName PackageVersion
+    , pPackages :: Map PackageName PackagePath
     , pExtraDeps :: Map PackageName (ExtraDepVersion x)
     }
   deriving (Generic)
