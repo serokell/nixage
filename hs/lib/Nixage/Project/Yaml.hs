@@ -18,6 +18,9 @@ import Data.Text (Text)
 import Data.Void (Void)
 
 import Nixage.Project.Extensible
+import Nixage.Project.Native ( ProjectNative, pattern ProjectNative
+                             , pattern HackageDepVersionNative
+                             , pattern SourceDepVersionNative )
 import Nixage.Project.Types ( NixHash, NixpkgsVersion, StackageVersion
                             , PackageName, PackageVersion, ExternalSource(..))
 
@@ -75,3 +78,11 @@ instance FromJSON ProjectYaml where
             <*> v .:? "stackage"
             <*> v .:  "packages"
             <*> v .:? "extra-deps" .!= mempty
+
+projectYamlToProjectNative :: ProjectYaml -> ProjectNative
+projectYamlToProjectNative (ProjectYaml r mnv msv mpp mpv) =
+    ProjectNative r mnv msv mpp mpv'
+  where
+    mpv' = mpv <&> \case
+      HackageDepVersionYaml v        -> HackageDepVersionNative v
+      SourceDepVersionYaml es nh msb -> SourceDepVersionNative es nh msb
