@@ -9,6 +9,8 @@ module Nixage.Project.Types
     , PackagePath
 
     , ExternalSource (..)
+
+    , NixageError(..)
     ) where
 
 import Universum
@@ -58,3 +60,11 @@ data ExternalSource
         , gsRev    :: Text
         }
   deriving (Eq, Generic, Show)
+
+data NixageError =
+      ProjectNativeToStackConfigError Text
+    | YamlDecodingError Text
+    deriving (Show, Typeable)
+
+instance Exception NixageError
+

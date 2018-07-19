@@ -8,6 +8,8 @@ module Nixage.Project.Yaml
 
   , pattern HackageDepVersionYaml
   , pattern SourceDepVersionYaml
+
+  , projectYamlToProjectNative
   ) where
 
 import Universum

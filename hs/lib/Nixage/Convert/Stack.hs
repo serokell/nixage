@@ -5,7 +5,7 @@ import Data.Aeson (ToJSON(..), object, (.=), Value(..))
 import Universum
 
 import Nixage.Project.Types ( PackageName, PackageVersion, PackagePath
-                            , ExternalSource(GitSource))
+                            , ExternalSource(GitSource), NixageError(..))
 import Nixage.Project.Extensible (ExtraDepVersion)
 import Nixage.Project.Native ( ProjectNative, pattern ProjectNative
                              , pattern HackageDepVersionNative
@@ -31,9 +31,7 @@ data StackConfig = StackConfig
 instance ToJSON StackCustomSnapshot where
     toJSON (StackCustomSnapshot name resolver packages) =
         object [ "name" .= name
-               , "resolver" .= resolver
-               , "packages" .= elems (mapWithKey packageToJSON packages)
-               ]
+               , "resolver" .= resolver , "packages" .= elems (mapWithKey packageToJSON packages) ]
       where
         packageToJSON :: PackageName -> StackExtraDepVersion -> Value
         packageToJSON name stackExtraDepVersion = case stackExtraDepVersion of
@@ -46,22 +44,18 @@ instance ToJSON StackCustomSnapshot where
                             , "commit" .= rev
                             ] <> subdirs
 
-writeStackConfig :: StackConfig -> (Value, FilePath -> Value)
-writeStackConfig (StackConfig snapshot packages) =
+writeStackConfig :: StackConfig -> FilePath -> (Value, Value)
+writeStackConfig (StackConfig snapshot packages) snapshotPath =
     (toJSON snapshot, stackYamlBuilder)
   where
-    stackYamlBuilder filepath = object
-        [ "resolver" .= filepath
+    stackYamlBuilder = object
+        [ "resolver" .= snapshotPath
         , "packages" .= elems packages
         , "nix" .= nix]
 
     nix = object
         [ "enable" .= True
         , ("shell-file", String "stack-shell.nix")]
-
-data ProjectNativeToStackConfigError =
-    ProjectNativeToStackConfigError Text deriving (Show, Typeable)
-instance Exception ProjectNativeToStackConfigError
 
 -- | Convert ProjectNative AST to StackConfig
 projectNativeToStackConfig :: (MonadThrow m)
@@ -80,9 +74,3 @@ projectNativeToStackConfig (ProjectNative resolver _ _ mpp mpv) = do
         return $ StackGitDepVersion  git rev msd
     toStackExtraDep _ = throwM $ ProjectNativeToStackConfigError "Extra dep source incompatible with Stack"
 
-
--- snapshot = StackCustomSnapshot "nixage-stack-snapshot" "lts-11.14" $ fromList [("aeson-options", StackHackageDepVersion "0.0.0")]
--- config = StackConfig "test-snapshot.yaml" $ fromList [("nixage", ".")]
-
--- mkStackConfig :: IO ()
--- mkStackConfig = writeFile "stack.yaml" $
