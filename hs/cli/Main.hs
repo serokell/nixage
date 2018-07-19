@@ -54,10 +54,10 @@ stackAction args = do
         withSystemTempFile "nixage-snapshot" $ \snapshotPath _ ->
           withTempFile "." "nixage-stack" $ \stackPath _ -> do
             let (snapshot, stack) = writeStackConfig stackConfig snapshotPath
+            let  args' = ["--stack-yaml", toText stackPath] <> args
             liftIO $ do
-
                 encodeFile snapshotPath snapshot
                 encodeFile stackPath stack
                 (_,_,_,handle) <- createProcess $
-                    (proc "stack" (toString <$> args)) { delegate_ctlc = True }
+                    (proc "stack" (toString <$> args')) { delegate_ctlc = True }
                 void $ waitForProcess handle
