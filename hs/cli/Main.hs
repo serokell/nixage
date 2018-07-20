@@ -1,17 +1,17 @@
 import Universum
 
 import Data.Yaml (decodeFileEither, encodeFile)
-import Options.Applicative ( Parser, info, fullDesc, progDesc, header
-                           , execParser, hsubparser, command
-                           , forwardOptions, strArgument, ParserInfo, Mod
-                           , CommandFields, optional, long, metavar, value
-                           , option, auto, helper)
+import Options.Applicative ( info, fullDesc, progDesc, header
+                           , execParser, helper)
 import System.IO.Temp (withSystemTempFile, withTempFile)
 import System.Process (waitForProcess, createProcess, delegate_ctlc, proc)
 
 import Nixage.Project.Yaml (ProjectYaml, projectYamlToProjectNative)
 import Nixage.Project.Types (NixageError(..))
 import Nixage.Convert.Stack (createStackFiles, projectNativeToStackConfig, StackConfig)
+
+import Types
+import Parser
 
 main :: IO ()
 main = execParser (info nixageP infoMod) >>= \case
@@ -21,61 +21,6 @@ main = execParser (info nixageP infoMod) >>= \case
     infoMod = header "Nixage"
            <> progDesc "Build Haskell packages with Nix and Stackage"
            <> fullDesc
-
-
--- | * Nixage cli command types
-
-data NixageCmd =
-      StackCmd StackArgs
-    | ConvertCmd ConvertArgs
-
-type StackArgs = [Text]
-
-data ConvertArgs = ConvertArgs
-    { caInFormat :: InFormat            -- ^ Not optional (default in parser)
-    , caOutFromat :: OutFormat
-    , caInOutPath :: Maybe (Text, Text) -- ^ Optional (default from 'inFormat')
-    } deriving (Show)
-
-data InFormat = YamlInFormat  deriving (Read, Show)
-data OutFormat = StackOutFormat deriving (Read, Show)
-
-defaultInPath :: InFormat -> Text
-defaultInPath YamlInFormat = "project.yaml"
-
-defaultOutPath :: OutFormat -> Text
-defaultOutPath StackOutFormat = "stack.yaml"
-
--- | * Nixage cli command parsers
-
-nixageP :: Parser NixageCmd
-nixageP = hsubparser $ mconcat nixageCmds
-
-nixageCmds :: [Mod CommandFields NixageCmd]
-nixageCmds =
-    [ command "stack" $ info (StackCmd <$> stackP) $
-           progDesc "Run stack on stack.yaml generated from project.yaml"
-        <> forwardOptions
-    , command "convert" $ info (ConvertCmd <$> convertP) $
-           progDesc "Convert between input formats (Yaml, Stack) "
-    ]
-
--- | Parse all arguments after 'stack' command as raw [Text]
-stackP :: Parser StackArgs
-stackP = many $ strArgument mempty
-
-convertP :: Parser ConvertArgs
-convertP = ConvertArgs
-       <$> option auto (long "from" <> metavar "in-format" <> value YamlInFormat)
-       <*> option auto (long "to" <> metavar "out-format")
-       <*> inOutPathP
-  where
-      inOutPathP :: Parser (Maybe (Text, Text))
-      inOutPathP = (,)
-               <$> optional (strArgument $ metavar "in-path")
-               <*> optional (strArgument $ metavar "out-path") <&> \case
-               (Just inPath, Just outPath) -> Just (inPath, outPath)
-               _ ->  Nothing
 
 
 -- | * Nixage command actions
