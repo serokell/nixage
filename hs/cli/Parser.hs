@@ -4,10 +4,10 @@ module Parser where
 --
 import Universum
 import Options.Applicative ( Parser, info, fullDesc, progDesc, header
-                           , hsubparser, command
+                           , hsubparser, subparser, command
                            , forwardOptions, strArgument, ParserInfo, Mod
                            , CommandFields, optional, long, metavar, value
-                           , option, auto, helper, strOption)
+                           , option, auto, helper, strOption, commandGroup)
 
 import Types
 
@@ -20,40 +20,78 @@ nixageP = hsubparser $ mconcat
            progDesc "Convert between input formats (Yaml, Stack) "
     ]
 
+-- | * Stack command parser
+--
 -- | Parse all arguments after 'stack' command as raw [Text]
 stackArgsP :: Parser StackArgs
 stackArgsP = many $ strArgument mempty
 
--- | Convert command parsers
-convertArgsP, yamlConvertInP, xConvertInP :: Parser ConvertArgs
-convertArgsP = hsubparser $ mconcat
-    [ command' "from-yaml" yamlConvertInP
-    , command' "from-x"    xConvertInP
-    , command' "to-stack"  $ ImplicitConvertIn <$> stackConvertOutP
-    , command' "to-y"      $ ImplicitConvertIn <$> yConvertOutP
+
+
+-- | * Convert command parsers
+
+convertArgsP :: Parser ConvertArgs
+convertArgsP = hsubparser convertArgsInMod
+
+-- | ConvertArgs parser for first command (In or Out with default In)
+-- For each (inP, outP) from (Is + [defI]) x Os:
+--    apply (ConvertArgs <$> inP <*> outP) parser after nested commands
+convertArgsInMod :: Mod CommandFields ConvertArgs
+convertArgsInMod =
+       (flip foldMap convertInPs $ \(inCmd, inP, defIn) ->
+           command' inCmd $ hsubparser $ convertArgsOutMod inP defIn)
+    <> convertArgsOutMod defConvertInP defConvertIn
+    <> metavar "COMMAND"
+    <> commandGroup "Input/output format command"
+
+-- | ConvertArgs parser for second command (Out)
+convertArgsOutMod :: Parser ConvertIn -> ConvertIn -> Mod CommandFields ConvertArgs
+convertArgsOutMod inP defIn=
+       (flip foldMap convertOutPs $ \(outCmd, outP, defOut) ->
+            command' outCmd $ fmap (fromMaybe $ ConvertArgs defIn defOut) $
+                optional $ ConvertArgs <$> inP <*> outP)
+    <> metavar "OUT_COMMAND"
+    <> commandGroup "Output format command"
+
+-- | ConvertIn parsers for each ConvertIn constructor
+-- Each command should specify its default value
+convertInPs  :: [(String, Parser ConvertIn, ConvertIn)]
+convertInPs =
+    [ ( "from-yaml"
+      , YamlConvertIn <$> (strArgument $ metavar "project-yaml")
+      , defConvertIn
+      )
+    , ( "from-x"
+      , XConvertIn
+        <$> (strArgument $ metavar "x-in0" <> value "val-x-in0")
+        <*> (strOption $ long "x-in1" <> value "val-x-in1")
+      , XConvertIn "def-x-0" "def-x-1"
+      )
     ]
 
-yamlConvertInP = YamlConvertIn
-             <$> (strOption $ long "from" <> value "project.yaml" )
-             <*> convertOutP
+-- Default ConvertIn
+defConvertInP :: Parser ConvertIn
+defConvertInP = pure defConvertIn
 
-xConvertInP =  XConvertIn
-          <$> (strOption $ long "x-in")
-          <*> convertOutP
+defConvertIn :: ConvertIn
+defConvertIn = YamlConvertIn "project.yaml"
 
 
-convertOutP, stackConvertOutP, yConvertOutP :: Parser ConvertOut
-convertOutP = hsubparser $ mconcat
-    [ command' "to-stack" stackConvertOutP
-    , command' "to-y"     yConvertOutP
+-- | ConvertOut parsers for each ConvertOut constructor
+convertOutPs  :: [(String, Parser ConvertOut, ConvertOut)]
+convertOutPs =
+    [ ( "to-stack"
+      , StackConvertOut
+        <$> (strArgument $ metavar "stack-yaml")
+        <*> (strArgument $ metavar "snapshot-yaml")
+      , StackConvertOut "stack.yaml" "snapshot.yaml"
+      )
+    , ( "to-y"
+      , YConvertOut <$> (strArgument $ metavar "y-out")
+      , YConvertOut "def-y-out"
+      )
     ]
 
-stackConvertOutP = StackConvertOut
-              <$> (strArgument $ metavar "stack-yaml" <> value "stack.yaml")
-              <*> (strArgument $ metavar "snapshot-yaml" <> value "snapshot.yaml")
-
-yConvertOutP = YConvertOut
-           <$> (strArgument $ metavar "y-out")
-
+-- | Helper function
 command' :: String -> Parser a -> Mod CommandFields a
-command' cmd subP = command cmd $ info subP mempty
+command' cmd subP = command cmd $ info subP $ mempty

@@ -11,10 +11,11 @@ data NixageCmd =
 
 type StackArgs = [Text]
 
-data ConvertArgs =
-      YamlConvertIn Text ConvertOut
-    | XConvertIn Text ConvertOut
-    | ImplicitConvertIn ConvertOut
+data ConvertArgs = ConvertArgs ConvertIn ConvertOut deriving (Show)
+
+data ConvertIn =
+      YamlConvertIn Text
+    | XConvertIn Text Text
       deriving (Show)
 
 data ConvertOut =
