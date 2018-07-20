@@ -62,10 +62,9 @@ stackAction args = do
             void $ waitForProcess handle
 
 convertAction :: (MonadIO m, MonadThrow m) => ConvertArgs -> m ()
-convertAction (ConvertArgs inFormat outFormat mInOutPath) = do
-    let (inPath, outPath) =
-          fromMaybe (defaultInPath inFormat, defaultOutPath outFormat) mInOutPath
-    projectNative <- case inFormat of
-        YamlInFormat -> projectYamlToProjectNative <$> readProjectYaml (toString inPath)
-    case outFormat of
-      StackOutFormat -> return ()
+convertAction convertArgs = do
+    print convertArgs
+--    projectNative <- case inFormat of
+--        YamlInFormat -> projectYamlToProjectNative <$> readProjectYaml (toString inPath)
+--    case outFormat of
+--      StackOutFormat -> return ()
