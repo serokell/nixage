@@ -25,7 +25,7 @@ main = execParser (info nixageP infoMod) >>= \case
 
 -- | * Nixage command actions
 
--- | read ProjectYaml from project.yaml
+-- | read ProjectYaml from file
 readProjectYaml :: (MonadIO m, MonadThrow m) => FilePath -> m ProjectYaml
 readProjectYaml projectYamlPath =
     liftIO (decodeFileEither projectYamlPath) >>= \case
@@ -35,11 +35,11 @@ readProjectYaml projectYamlPath =
 
 -- | Write stack and snapshot yaml files
 writeStackConfig :: (MonadIO m, MonadThrow m)
-                 => FilePath     -- ^ Snapshot yaml path
-                 -> FilePath     -- ^ Stack yaml path
+                 => FilePath     -- ^ Stack yaml path
+                 -> FilePath     -- ^ Snapshot yaml path
                  -> StackConfig
                  -> m ()
-writeStackConfig snapshotPath stackPath stackConfig = do
+writeStackConfig stackPath snapshotPath stackConfig = do
    let (snapshot, stack) = createStackFiles stackConfig snapshotPath
    liftIO $ do
        encodeFile snapshotPath snapshot
@@ -54,17 +54,24 @@ stackAction args = do
     let stackConfig = projectNativeToStackConfig projectNative
     withSystemTempFile "nixage-stack-snapshot.yaml" $ \snapshotPath _ ->
       withTempFile "." "nixage-stack.yaml" $ \stackPath _ -> do
-        writeStackConfig snapshotPath stackPath stackConfig
+        writeStackConfig stackPath snapshotPath stackConfig
         let  args' = ["--stack-yaml", toText stackPath] <> args
         liftIO $ do
             (_,_,_,handle) <- createProcess $
                 (proc "stack" (toString <$> args')) { delegate_ctlc = True }
             void $ waitForProcess handle
 
+-- | Conversion between project specification formats.
 convertAction :: (MonadIO m, MonadThrow m) => ConvertArgs -> m ()
-convertAction convertArgs = do
-    print convertArgs
---    projectNative <- case inFormat of
---        YamlInFormat -> projectYamlToProjectNative <$> readProjectYaml (toString inPath)
---    case outFormat of
---      StackOutFormat -> return ()
+convertAction ca@(ConvertArgs convertIn convertOut) = do
+    print ca
+    projectNative <- case convertIn of
+      YamlConvertIn yamlPath -> projectYamlToProjectNative <$> readProjectYaml (toString yamlPath)
+      _                      -> throwM $ OtherError "Unsupported input format"
+    case convertOut of
+      StackConvertOut stackPath snapshotPath -> do
+        let stackConfig = projectNativeToStackConfig projectNative
+        writeStackConfig (toString stackPath) (toString snapshotPath) stackConfig
+      _ ->
+          throwM $ OtherError "Unsupported output format"
+
