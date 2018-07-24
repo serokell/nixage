@@ -25,12 +25,12 @@ library:
 
   dependencies:
     - base
+    - universum
 
     - aeson
     - aeson-options
     - containers
     - text
-    - universum
 
 executables:
   nixage:
@@ -39,12 +39,11 @@ executables:
 
     dependencies:
       - base
-
       - universum
-      - yaml
 
       - nixage
 
+      - yaml
 
     ghc-options:
       - -threaded

@@ -10,33 +10,32 @@ module Nixage.Project.Extensible
   , XXExtraDepVersion
   ) where
 
+import Universum
+
 import Data.Aeson (FromJSON)
 import Data.Map (Map)
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Universum
 
 import Nixage.Project.Types ( NixHash, NixpkgsVersion, StackageVersion
-                            , PackageName, PackageVersion, ExternalSource
-                            , PackagePath)
+                            , PackageName, PackageVersion, ExternalSource)
 
 
 -- | Extensible project specification AST
 data Project x = Project
     { pXProject :: !(XProject x)
+
     , pResolver :: Text
     , pNixpkgs  :: Maybe NixpkgsVersion
     , pStackage :: Maybe StackageVersion
-    , pPackages :: Map PackageName PackagePath
+
+    , pPackages :: Map PackageName FilePath
+
     , pExtraDeps :: Map PackageName (ExtraDepVersion x)
     }
   deriving (Generic)
 
 type family XProject x :: *
-
-type family XHackageDepVersion x :: *
-type family XSourceDepVersion x :: *
-type family XXExtraDepVersion x :: *
 
 -- | Extensible package version specification
 data ExtraDepVersion x
@@ -51,3 +50,6 @@ deriving instance
   , Eq (XXExtraDepVersion x)
   ) => Eq (ExtraDepVersion x)
 
+type family XHackageDepVersion x :: *
+type family XSourceDepVersion x :: *
+type family XXExtraDepVersion x :: *

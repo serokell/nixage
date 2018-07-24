@@ -11,12 +11,13 @@ module Nixage.Project.Types
     , ExternalSource (..)
     ) where
 
-import Data.Aeson (FromJSON, ToJSON)
+import Universum
+
+import Data.Aeson (FromJSON, ToJSON, (.:))
 import Data.Aeson.Options (defaultOptions)
 import Data.Aeson.TH (deriveJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Universum
 
 
 -- | Hash used for nix source (currently sha256)

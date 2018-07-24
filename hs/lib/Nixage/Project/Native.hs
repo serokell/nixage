@@ -10,10 +10,11 @@ module Nixage.Project.Native
   , pattern SourceDepVersionNative
   ) where
 
+import Universum
+
 import Data.Map (Map)
 import Data.Text (Text)
 import Data.Void (Void)
-import Universum
 
 import Nixage.Project.Extensible
 import Nixage.Project.Types ( NixHash, NixpkgsVersion, StackageVersion
@@ -39,10 +40,10 @@ deriving instance Show (ExtraDepVersion AstNixage)
 pattern ProjectNative :: Text
                       -> (Maybe NixpkgsVersion)
                       -> (Maybe StackageVersion)
-                      -> Map PackageName PackageVersion
+                      -> Map PackageName FilePath
                       -> Map PackageName (ExtraDepVersion AstNixage)
                       -> Project AstNixage
-pattern ProjectNative r mnv msv mpv mpn = Project () r mnv msv mpv mpn
+pattern ProjectNative r mnv msv ps eds = Project () r mnv msv ps eds
 
 
 pattern HackageDepVersionNative :: PackageVersion
@@ -53,4 +54,4 @@ pattern SourceDepVersionNative :: ExternalSource
                                -> NixHash
                                -> Maybe FilePath
                                -> ExtraDepVersion AstNixage
-pattern SourceDepVersionNative es nh msd= SourceDepVersion () es nh msd
+pattern SourceDepVersionNative es nh msd = SourceDepVersion () es nh msd

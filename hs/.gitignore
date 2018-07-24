@@ -1,7 +1,10 @@
+/nixage.cabal
+
+/result
+
 /dist-newstyle/
 /.ghc.environment*
 /cabal.project
-/nixage.cabal
-.stack-work
-stack.yaml
-result
+
+/stack.yaml
+/.stack-work
