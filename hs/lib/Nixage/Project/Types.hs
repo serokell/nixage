@@ -6,7 +6,6 @@ module Nixage.Project.Types
 
     , PackageName
     , PackageVersion
-    , PackagePath
 
     , ExternalSource (..)
 
@@ -15,7 +14,6 @@ module Nixage.Project.Types
 
 import Universum
 
-import Data.Aeson (FromJSON, ToJSON, (.:))
 import Data.Aeson.Options (defaultOptions)
 import Data.Aeson.TH (deriveJSON)
 import Data.Text (Text)
@@ -48,9 +46,6 @@ type PackageName = Text
 
 -- | Version of a Haskell package
 type PackageVersion = Text
-
--- | Path to a Haskell package
-type PackagePath = Text
 
 
 -- | Description of a way to obtain the source of the package

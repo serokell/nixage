@@ -1,16 +1,14 @@
 module Nixage.Convert.Stack where
 
-import Data.Map.Strict (mapWithKey, fromList, mapMaybe)
-import Data.Aeson (ToJSON(..), object, (.=), Value(..))
 import Universum
 
-import Nixage.Project.Types ( PackageName, PackageVersion, PackagePath
-                            , ExternalSource(GitSource), NixageError(..))
-import Nixage.Project.Extensible (ExtraDepVersion)
-import Nixage.Project.Native ( ProjectNative, pattern ProjectNative
-                             , pattern HackageDepVersionNative
-                             , pattern SourceDepVersionNative
-                             , AstNixage)
+import Data.Aeson (ToJSON(..), object, (.=), Value(..))
+import qualified Data.Map.Strict as M
+
+import Nixage.Project.Types ( PackageName, PackageVersion
+                            , ExternalSource(GitSource))
+import Nixage.Project.Extensible (ExtraDepVersion (..), Project (..))
+import Nixage.Project.Native (AstNixage, ProjectNative)
 
 
 data StackExtraDepVersion =
@@ -25,24 +23,24 @@ data StackCustomSnapshot = StackCustomSnapshot
 
 data StackConfig = StackConfig
     { scStackCustomSnapshot :: StackCustomSnapshot
-    , scPackages :: Map PackageName PackagePath
+    , scPackages :: Map PackageName FilePath
     }
 
 instance ToJSON StackCustomSnapshot where
     toJSON (StackCustomSnapshot name resolver packages) =
         object [ "name" .= name
-               , "resolver" .= resolver , "packages" .= elems (mapWithKey packageToJSON packages) ]
+               , "resolver" .= resolver
+               , "packages" .= map packageToJson (M.toList packages)
+               ]
       where
-        packageToJSON :: PackageName -> StackExtraDepVersion -> Value
-        packageToJSON name stackExtraDepVersion = case stackExtraDepVersion of
-            StackHackageDepVersion packageVersion ->
-                String $ name <> "-" <> packageVersion
-            StackGitDepVersion git rev subdir ->
-                let subdirs = maybeToList
-                            $ (\subdir -> "subdirs" .= [subdir]) <$> subdir
-                in object $ [ "git" .= git
-                            , "commit" .= rev
-                            ] <> subdirs
+        packageToJson :: (PackageName, StackExtraDepVersion) -> Value
+        packageToJson (packageName, StackHackageDepVersion packageVersion) =
+            String $ packageName <> "-" <> packageVersion
+        packageToJson (_, StackGitDepVersion url rev subdir) =
+            object [ "git"     .= url
+                   , "commit"  .= rev
+                   , "subdirs" .= [fromMaybe "." subdir]
+                   ]
 
 writeStackConfig :: StackConfig -> FilePath -> (Value, Value)
 writeStackConfig (StackConfig snapshot packages) snapshotPath =
@@ -55,22 +53,20 @@ writeStackConfig (StackConfig snapshot packages) snapshotPath =
 
     nix = object
         [ "enable" .= True
-        , ("shell-file", String "stack-shell.nix")]
+        , "shell-file" .= ("stack-shell.nix" :: Text)
+        ]
 
 -- | Convert ProjectNative AST to StackConfig
-projectNativeToStackConfig :: (MonadThrow m)
-                           => ProjectNative
-                           -> m StackConfig
-projectNativeToStackConfig (ProjectNative resolver _ _ mpp mpv) = do
-    packages <- mapM toStackExtraDep mpv
-    let snapshot = StackCustomSnapshot "nixage-stack-snapshot" resolver packages
-    return $ StackConfig snapshot mpp
+projectNativeToStackConfig :: ProjectNative -> StackConfig
+projectNativeToStackConfig (Project () resolver _ _ ps eds) =
+    let packages = map toStackExtraDep eds
+        snapshot = StackCustomSnapshot "nixage-stack-snapshot" resolver packages
+    in StackConfig snapshot ps
   where
-    toStackExtraDep :: (MonadThrow m)
-                    => ExtraDepVersion AstNixage
-                    -> m StackExtraDepVersion
-    toStackExtraDep (HackageDepVersionNative v) = return $ StackHackageDepVersion v
-    toStackExtraDep (SourceDepVersionNative (GitSource git rev) _ msd) =
-        return $ StackGitDepVersion  git rev msd
-    toStackExtraDep _ = throwM $ ProjectNativeToStackConfigError "Extra dep source incompatible with Stack"
-
+    toStackExtraDep :: ExtraDepVersion AstNixage -> StackExtraDepVersion
+    toStackExtraDep (HackageDepVersion () v) =
+        StackHackageDepVersion v
+    toStackExtraDep (SourceDepVersion () (GitSource git rev) _ msd) =
+        StackGitDepVersion git rev msd
+    toStackExtraDep (XExtraDepVersion v) =
+        absurd v

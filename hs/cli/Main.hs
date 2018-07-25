@@ -1,4 +1,3 @@
-
 import Universum
 
 import Data.Yaml (decodeFileEither, encodeFile)
@@ -8,14 +7,13 @@ import Options.Applicative ( Parser, info, fullDesc, progDesc, header
 import System.IO.Temp (withSystemTempFile, withTempFile)
 import System.Process (waitForProcess, createProcess, delegate_ctlc, proc)
 
-import Nixage.Project.Yaml (ProjectYaml, projectYamlToProjectNative)
+import Nixage.Project.Yaml (projectYamlToProjectNative)
 import Nixage.Project.Types (NixageError(..))
 import Nixage.Convert.Stack (writeStackConfig, projectNativeToStackConfig)
 
 main :: IO ()
 main = execParser (info nixageP infoMod) >>= \case
-    StackCmd args -> do
-      catch (stackAction args) $ \(e :: NixageError) -> print e
+    StackCmd args -> stackAction args
   where
     infoMod = header "Nixage"
            <> progDesc "Build Haskell packages with Nix and Stackage"
@@ -50,9 +48,9 @@ stackAction args = do
       Left err -> throwM $ YamlDecodingError (show err)
       Right projectYaml -> do
         let projectNative = projectYamlToProjectNative projectYaml
-        stackConfig <- projectNativeToStackConfig projectNative
-        withSystemTempFile "nixage-snapshot" $ \snapshotPath _ ->
-          withTempFile "." "nixage-stack" $ \stackPath _ -> do
+        let stackConfig = projectNativeToStackConfig projectNative
+        withSystemTempFile "nixage-stack-snapshot.yaml" $ \snapshotPath _ ->
+          withTempFile "." "nixage-stack.yaml" $ \stackPath _ -> do
             let (snapshot, stack) = writeStackConfig stackConfig snapshotPath
             let  args' = ["--stack-yaml", toText stackPath] <> args
             liftIO $ do
