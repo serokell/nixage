@@ -62,37 +62,41 @@ pattern SourceDepVersionNative :: ExternalSource
 pattern SourceDepVersionNative es nh msd = SourceDepVersion () es nh msd
 
 
-instance ToNix (ExtraDepVersion AstNixage) Identity NExpr where
-    toNix (HackageDepVersionNative s) = Identity $ mkStr s
+instance Monad m => ToNix (ExtraDepVersion AstNixage) m NExpr where
+    toNix (HackageDepVersionNative s) = return $ mkStr s
     toNix (SourceDepVersionNative (GitSource git rev) sha256 subdir) =
-        Identity $ mkNonRecSet $
+        return $ mkNonRecSet $
             [ "git" $= mkStr git
             , "rev" $= mkStr rev
             , "sha256" $= mkStr sha256
             ]
             <> maybeToList (("subdir" $=) . mkStr . toText <$> subdir)
 
-instance ToNix StackageVersion Identity NExpr where
-    toNix (StackageVersion url sha256) = Identity $ mkNonRecSet
+instance Monad m => ToNix StackageVersion m NExpr where
+    toNix (StackageVersion url sha256) = return $ mkNonRecSet
         [ "url" $= mkStr url
         , "sha256" $= mkStr sha256
         ]
 
-instance ToNix NixpkgsVersion Identity NExpr where
-    toNix (NixpkgsVersion url sha256) = Identity $ mkNonRecSet
+instance Monad m => ToNix NixpkgsVersion m NExpr where
+    toNix (NixpkgsVersion url sha256) = return $ mkNonRecSet
         [ "url" $= mkStr url
         , "sha256" $= mkStr sha256
         ]
 
-instance ToNix ProjectNative Identity NExpr where
-    toNix (ProjectNative r mnv msv mpp mpv) = Identity $ mkNonRecSet $
-        [ "resolver" $= mkStr r
-        , "packages" $= packagesExpr
-        ]
-        <> maybeToList (("stackage" $=) . runIdentity . toNix <$> msv)
-        <> maybeToList (("nixpkgs" $=) . runIdentity . toNix <$> mnv)
-        <> (if null mpv then [] else [ "extra-deps" $= mpvExpr ])
-      where
-          packagesExpr = attrsE $ second (mkStr . toText)  <$> toList mpp
-          mpvExpr = attrsE
-                  $ second (runIdentity . toNix) <$> toList mpv
+instance Monad m => ToNix ProjectNative m NExpr where
+    toNix (ProjectNative r mnv msv ps eds) = do
+        mnvExpr <- mapM toNix mnv
+        msvExpr <- mapM toNix msv
+        let packagesExpr = attrsE $ second (mkStr . toText) <$> toList ps
+        edsExpr <- attrsE <$> mapM (\(pn, ed) -> (pn,) <$> toNix ed) (toList eds)
+
+        return $ mkNonRecSet $
+            [ "resolver" $= mkStr r
+            ]
+            <> maybeToList (("nixpkgs" $=) <$> mnvExpr)
+            <> maybeToList (("stackage" $=) <$> msvExpr)
+            <>
+            [ "packages" $= packagesExpr
+            , "extra-deps" $= edsExpr
+            ]
