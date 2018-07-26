@@ -17,9 +17,6 @@ import Paths_nixage (getDataFileName)
 import Types
 import Parser
 
-import Types
-import Parser
-
 main :: IO ()
 main = execParser (info (helper <*> nixageP) infoMod) >>= \case
     StackCmd stackArgs     -> stackAction stackArgs
