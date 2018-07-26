@@ -29,7 +29,9 @@ library:
 
     - aeson
     - aeson-options
+    - ansi-wl-pprint
     - containers
+    - hnix
     - text
 
 executables:
