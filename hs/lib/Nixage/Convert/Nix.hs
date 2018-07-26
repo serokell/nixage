@@ -4,7 +4,6 @@ module Nixage.Convert.Nix
 
 import Universum
 
-import Nix.Expr.Types (NExpr)
 import Nix.Convert (toNix)
 import Nix.Pretty (prettyNix)
 import Text.PrettyPrint.ANSI.Leijen (Doc)
