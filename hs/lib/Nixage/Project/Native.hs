@@ -65,14 +65,15 @@ pattern SourceDepVersionNative es nh msd = SourceDepVersion () es nh msd
 
 
 instance Monad m => ToNix (ExtraDepVersion AstNixage) m NExpr where
-    toNix (HackageDepVersionNative s) = return $ mkStr s
-    toNix (SourceDepVersionNative (GitSource git rev) sha256 subdir) =
+    toNix (HackageDepVersion () s) = return $ mkStr s
+    toNix (SourceDepVersion () (GitSource git rev) sha256 subdir) =
         return $ mkNonRecSet $
             [ "git" $= mkStr git
             , "rev" $= mkStr rev
             , "sha256" $= mkStr sha256
             ]
             <> maybeToList (("subdir" $=) . mkStr . toText <$> subdir)
+    toNix (XExtraDepVersion v) = absurd v
 
 instance Monad m => ToNix StackageVersion m NExpr where
     toNix (StackageVersion url sha256) = return $ mkNonRecSet
@@ -87,11 +88,11 @@ instance Monad m => ToNix NixpkgsVersion m NExpr where
         ]
 
 instance Monad m => ToNix ProjectNative m NExpr where
-    toNix (ProjectNative r mnv msv ps eds) = do
+    toNix (Project () r mnv msv ps eds) = do
         mnvExpr <- mapM toNix mnv
         msvExpr <- mapM toNix msv
         let packagesExpr = attrsE $ second (mkStr . toText) <$> toList ps
-        edsExpr <- attrsE <$> mapM (\(pn, ed) -> (pn,) <$> toNix ed) (toList eds)
+        edsExpr <- attrsE <$> mapM (sequence . second toNix) (toList eds)
 
         return $ mkNonRecSet $
             [ "resolver" $= mkStr r
