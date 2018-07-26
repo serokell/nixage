@@ -22,7 +22,6 @@ import Nix.Convert (ToNix(..))
 import Nix.Expr.Shorthands (mkNonRecSet, mkStr, ($=), attrsE)
 import Nix.Expr.Types (NExpr)
 
-
 import Nixage.Project.Extensible
 import Nixage.Project.Types ( NixHash, NixpkgsVersion(..), StackageVersion(..)
                             , PackageName, PackageVersion, ExternalSource(..))
