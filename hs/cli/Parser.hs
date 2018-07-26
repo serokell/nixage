@@ -61,12 +61,6 @@ convertInPs =
       , YamlConvertIn <$> (strArgument $ metavar "project-yaml")
       , defConvertIn
       )
-    , ( "from-x"
-      , XConvertIn
-        <$> (strArgument $ metavar "x-in0" <> value "val-x-in0")
-        <*> (strOption $ long "x-in1" <> value "val-x-in1")
-      , XConvertIn "def-x-0" "def-x-1"
-      )
     ]
 
 -- Default ConvertIn
@@ -85,10 +79,6 @@ convertOutPs =
         <$> (strArgument $ metavar "stack-yaml")
         <*> (strArgument $ metavar "snapshot-yaml")
       , StackConvertOut "stack.yaml" "snapshot.yaml"
-      )
-    , ( "to-y"
-      , YConvertOut <$> (strArgument $ metavar "y-out")
-      , YConvertOut "def-y-out"
       )
     ]
 

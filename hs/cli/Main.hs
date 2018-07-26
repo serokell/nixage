@@ -64,15 +64,10 @@ stackAction args = do
 
 -- | Conversion between project specification formats.
 convertAction :: (MonadIO m, MonadThrow m) => ConvertArgs -> m ()
-convertAction ca@(ConvertArgs convertIn convertOut) = do
-    print ca
+convertAction (ConvertArgs convertIn convertOut) = do
     projectNative <- case convertIn of
       YamlConvertIn yamlPath -> projectYamlToProjectNative <$> readProjectYaml (toString yamlPath)
-      _                      -> throwM $ OtherError "Unsupported input format"
     case convertOut of
       StackConvertOut stackPath snapshotPath -> do
         let stackConfig = projectNativeToStackConfig projectNative
         writeStackConfig (toString stackPath) (toString snapshotPath) stackConfig
-      _ ->
-          throwM $ OtherError "Unsupported output format"
-
