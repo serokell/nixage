@@ -1,5 +1,3 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-
 module Nixage.Project.Native
   ( ProjectNative
   , pattern ProjectNative
