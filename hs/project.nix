@@ -13,4 +13,8 @@
     monadlist = "0.0.2";
     serialise = "0.2.0.0";
   };
+  ghc-options = {
+    "$locals" = "-Wall";
+    "$everything" = "-Wall";
+  };
 }

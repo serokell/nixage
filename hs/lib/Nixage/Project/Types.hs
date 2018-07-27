@@ -10,10 +10,15 @@ module Nixage.Project.Types
     , ExternalSource (..)
 
     , NixageException(..)
+    , GhcOptions (..)
     ) where
 
 import Universum hiding (Show)
 
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Map.Strict as M
+import Data.Aeson ( ToJSON(..), (.=), object, FromJSON(..), withObject
+                  , (.:?), Value(..))
 import Data.Aeson.Options (defaultOptions)
 import Data.Aeson.TH (deriveJSON)
 import Data.Text (Text)
@@ -56,6 +61,35 @@ data ExternalSource
         , gsRev    :: Text
         }
   deriving (Eq, Generic, Show)
+
+type GhcOption = Text
+
+data GhcOptions
+    = GhcOptions
+        { goLocals :: Maybe GhcOption
+        , goEverything :: Maybe GhcOption
+        , goPackageOptions :: Map PackageName GhcOption
+        }
+    deriving (Show)
+
+instance ToJSON GhcOptions where
+    toJSON (GhcOptions locals everything packageOptions) = object $
+           maybeToList (("$locals" .=) <$> locals)
+        <> maybeToList (("$everything" .=) <$> everything)
+        <> (second toJSON <$> M.toList packageOptions)
+
+instance FromJSON GhcOptions where
+    parseJSON = withObject "GhcOptions" $ \v ->
+        let locals = "$locals"
+            everything ="$everything"
+            ps = M.fromList $ fmap (second (\(String s) -> s)) $
+                filter ((`notElem` [locals, everything]) . fst) (HM.toList v)
+        in
+        GhcOptions
+            <$> v .:? locals
+            <*> v .:? everything
+            <*> pure ps
+
 
 data NixageException =
       ProjectNativeToStackConfigException Text
