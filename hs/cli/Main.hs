@@ -1,21 +1,20 @@
-
 import Universum
 
 import Data.Yaml (decodeFileEither, encodeFile)
-import Options.Applicative ( info, fullDesc, progDesc, header
-                           , execParser, helper)
-import System.IO.Temp (withSystemTempFile, withTempFile)
+import Options.Applicative (execParser, fullDesc, header, helper, info, progDesc)
 import System.Directory (copyFile)
-import System.Process (waitForProcess, createProcess, delegate_ctlc, proc)
+import System.IO.Temp (withSystemTempFile, withTempFile)
+import System.Process (createProcess, delegate_ctlc, proc, waitForProcess)
 
-import Nixage.Project.Yaml (projectYamlToProjectNative, ProjectYaml)
-import Nixage.Project.Types (NixageException(..))
-import Nixage.Convert.Stack (createStackFiles, projectNativeToStackConfig, StackConfig)
 import Nixage.Convert.Nix (projectNativeToPrettyNix)
+import Nixage.Convert.Stack (StackConfig, createStackFiles, projectNativeToStackConfig)
+import Nixage.Project.Types (NixageException (..))
+import Nixage.Project.Yaml (ProjectYaml, projectYamlToProjectNative)
 import Paths_nixage (getDataFileName)
 
-import Types
 import Parser
+import Types
+
 
 main :: IO ()
 main = execParser (info (helper <*> nixageP) infoMod) >>= \case

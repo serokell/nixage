@@ -48,6 +48,7 @@ type PackageName = Text
 -- | Version of a Haskell package
 type PackageVersion = Text
 
+
 -- | Description of a way to obtain the source of the package
 data ExternalSource
     = GitSource

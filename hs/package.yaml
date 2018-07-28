@@ -52,9 +52,8 @@ executables:
       - temporary
       - yaml
 
-
     ghc-options:
       - -threaded
 
-data-files: stack-shell.nix
 data-dir: data
+data-files: stack-shell.nix

@@ -10,6 +10,7 @@ import Nixage.Project.Types ( PackageName, PackageVersion
 import Nixage.Project.Extensible (ExtraDepVersion (..), Project (..))
 import Nixage.Project.Native (AstNixage, ProjectNative)
 
+
 data StackExtraDepVersion =
       StackHackageDepVersion PackageVersion
     | StackGitDepVersion Text Text (Maybe FilePath) -- git, rev, subdir
