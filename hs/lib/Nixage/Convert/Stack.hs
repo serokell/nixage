@@ -15,6 +15,7 @@ data StackExtraDepVersion =
       StackHackageDepVersion PackageVersion
     | StackGitDepVersion Text Text (Maybe FilePath) -- git, rev, subdir
     deriving Show
+
 data StackCustomSnapshot = StackCustomSnapshot
     { scsName :: Text
     , scsResolver :: Text

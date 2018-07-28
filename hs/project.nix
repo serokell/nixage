@@ -15,6 +15,5 @@
   };
   ghc-options = {
     "$locals" = "-Wall";
-    "$everything" = "-Wall";
   };
 }

@@ -15,9 +15,8 @@ module Nixage.Project.Types
 
 import Universum hiding (Show)
 
-import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as M
-import Data.Aeson ( ToJSON(..), (.=), object, FromJSON(..), withObject
+import Data.Aeson ( ToJSON(..), FromJSON(..), withObject
                   , (.:?), Value(..))
 import Data.Aeson.Options (defaultOptions)
 import Data.Aeson.TH (deriveJSON)
@@ -73,26 +72,21 @@ data GhcOptions
     deriving (Show)
 
 instance ToJSON GhcOptions where
-    toJSON (GhcOptions locals everything packageOptions) = object $
-           maybeToList (("$locals" .=) <$> locals)
-        <> maybeToList (("$everything" .=) <$> everything)
-        <> (second toJSON <$> M.toList packageOptions)
+    toJSON (GhcOptions locals everything packageOptions) = toJSON
+        . M.alter (const locals) "$locals"
+        . M.alter (const everything) "$everything"
+        $ packageOptions
 
 instance FromJSON GhcOptions where
     parseJSON = withObject "GhcOptions" $ \v ->
-        let locals = "$locals"
-            everything ="$everything"
-            ps = M.fromList $ fmap (second (\(String s) -> s)) $
-                filter ((`notElem` [locals, everything]) . fst) (HM.toList v)
-        in
         GhcOptions
-            <$> v .:? locals
-            <*> v .:? everything
-            <*> pure ps
+            <$> v .:? "$locals"
+            <*> v .:? "$everything"
+            <*> (parseJSON (Object v) <&> M.delete "$locals" . M.delete "$everything")
 
 
-data NixageException =
-      ProjectNativeToStackConfigException Text
+data NixageException
+    = ProjectNativeToStackConfigException Text
     | YamlDecodingException Text
     | ProjectNativeToNixException Text
     | ConvertException Text
