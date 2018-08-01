@@ -33,6 +33,7 @@ library:
     - ansi-wl-pprint
     - containers
     - hnix
+    - smallcheck
     - text
     - unordered-containers
     - yaml
@@ -76,6 +77,7 @@ tests:
     - filepath
     - tasty
     - tasty-golden
+    - tasty-smallcheck
     - yaml
 
 data-dir: data

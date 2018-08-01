@@ -68,7 +68,7 @@ data GhcOptions
         , goEverything     :: Maybe GhcOption
         , goPackageOptions :: HashMap PackageName GhcOption
         }
-    deriving (Show)
+    deriving (Show, Generic)
 
 instance ToJSON GhcOptions where
     toJSON (GhcOptions locals everything packageOptions) = toJSON

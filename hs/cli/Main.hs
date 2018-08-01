@@ -1,6 +1,5 @@
 import Universum
 
-import Data.Yaml (decodeFileEither, encodeFile)
 import Options.Applicative (execParser, fullDesc, header, helper, info, progDesc)
 import System.Directory (copyFile)
 import System.IO.Temp (withSystemTempFile, withTempFile)

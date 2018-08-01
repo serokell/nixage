@@ -15,6 +15,7 @@ module Nixage.Project.Native
 
 import Universum
 
+import Test.SmallCheck.Series (Serial(..), (\/), cons1, cons3)
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HM
 import Data.Text (Text)
@@ -115,3 +116,21 @@ instance Monad m => ToNix ProjectNative m NExpr where
             , "extra-deps" $= edsExpr
             ]
             <> maybeToList (("ghc-options" $=) <$> mgoExpr)
+
+
+instance (Monad m) => Serial m Text where
+    series = toText <$> series @_ @String
+
+instance (Monad m,Eq a, Hashable a, Serial m a, Serial m b)
+      => Serial m (HashMap a b) where
+    series = HM.fromList <$> series
+
+instance (Monad m) => Serial m ExternalSource
+instance (Monad m) => Serial m NixpkgsVersion
+instance (Monad m) => Serial m StackageVersion
+instance (Monad m) => Serial m GhcOptions
+instance (Monad m) => Serial m (ExtraDepVersion AstNixage) where
+    series = cons1 HackageDepVersionNative
+          \/ cons3 SourceDepVersionNative
+
+instance (Monad m) => Serial m ProjectNative
