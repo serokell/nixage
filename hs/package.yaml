@@ -75,6 +75,7 @@ tests:
 
     - bytestring
     - filepath
+    - smallcheck
     - tasty
     - tasty-golden
     - tasty-smallcheck
