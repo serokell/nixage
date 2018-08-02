@@ -81,5 +81,4 @@ tests:
     - tasty-smallcheck
     - yaml
 
-data-dir: data
-data-files: stack-shell.nix
+data-files: data/stack-shell.nix

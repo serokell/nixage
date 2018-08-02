@@ -34,7 +34,7 @@ stackAction args = do
     withSystemTempFile "nixage-stack-snapshot.yaml" $ \snapshotPath _ ->
       withTempFile "." "nixage-stack.yaml" $ \stackPath _ -> do
         withTempFile "." "stack-shell.nix" $ \stackShellPath _ -> do
-          stackShellSource <- liftIO $ getDataFileName "stack-shell.nix"
+          stackShellSource <- liftIO $ getDataFileName "data/stack-shell.nix"
           liftIO $ copyFile stackShellSource stackShellPath
           encodeToStack stackPath snapshotPath stackShellPath projectNative
           let  args' = ["--stack-yaml", toText stackPath] <> args
