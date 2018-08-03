@@ -9,7 +9,7 @@ import Test.Tasty.Golden (findByExtension, goldenVsString)
 
 import Nixage.Convert.FromYaml (decodeFromYaml)
 import Nixage.Convert.Nix (projectNativeToPrettyNix)
-import Nixage.Convert.Stack (projectNativeToStackFiles)
+import Nixage.Convert.Stack (StackFilesInfo (..), projectNativeToStackFiles)
 import Nixage.Project (ProjectNative)
 
 main :: IO ()
@@ -70,6 +70,5 @@ goldenTests testNameTemplate action =
     [stackYamlGoldenPath, snapshotYamlGoldenPath, nixGoldenPath] =
         (</>) goldenDir . addExtension testNameTemplate
         <$> ["stack-yaml-golden", "snapshot-yaml-golden", "nix-golden"]
-    toStackFiles =
-        projectNativeToStackFiles "test-snapshot.yaml" "test-stack-shell.nix"
-                                  "test-stack-shell-source.nix"
+    toStackFiles = projectNativeToStackFiles $
+        StackFilesInfo "test-snapshot.yaml" "test-stack-shell.nix"  "test-stack-shell-source.nix" "./."

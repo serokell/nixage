@@ -99,7 +99,7 @@ projectNativeToStackFiles :: StackFilesInfo
 projectNativeToStackFiles stackFilesInfo  =
         projectNativeToStackConfig
     >>> stackToJSON stackFilesInfo
-    >>> (\(x,y,z) -> (encode x, encode y, encode z))
+    >>> (\(x,y,z) -> (encode x, encode y, encodeUtf8 z))
 
 
 -- | Conversion + IO that writes stack and snapshot yaml files
