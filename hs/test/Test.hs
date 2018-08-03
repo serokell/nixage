@@ -1,6 +1,7 @@
 import Universum
 
 import qualified Data.ByteString.Lazy as BS
+import Data.Tuple.Select (sel1, sel2)
 import System.FilePath (addExtension, dropExtension, takeBaseName, (</>))
 import qualified Test.SmallCheck.Series as TSS
 import Test.Tasty (TestTree, defaultMain, testGroup)
@@ -53,12 +54,12 @@ goldenTests testNameTemplate action =
     [ goldenVsString
         (testNameTemplate <> "-stack")
         stackYamlGoldenPath -- golden file path
-        (BS.fromStrict . fst . toStackFiles <$> action )  -- action whose result is tested
+        (BS.fromStrict . sel1 . toStackFiles <$> action )  -- action whose result is tested
 
     , goldenVsString
         (testNameTemplate <> "-snapshot")
         snapshotYamlGoldenPath
-        (BS.fromStrict . snd . toStackFiles <$> action )
+        (BS.fromStrict . sel2 . toStackFiles <$> action )
 
     , goldenVsString
         (testNameTemplate <> "-nix")
@@ -69,4 +70,6 @@ goldenTests testNameTemplate action =
     [stackYamlGoldenPath, snapshotYamlGoldenPath, nixGoldenPath] =
         (</>) goldenDir . addExtension testNameTemplate
         <$> ["stack-yaml-golden", "snapshot-yaml-golden", "nix-golden"]
-    toStackFiles = projectNativeToStackFiles "test-snapshot.yaml" "test-stack-shell.nix"
+    toStackFiles =
+        projectNativeToStackFiles "test-snapshot.yaml" "test-stack-shell.nix"
+                                  "test-stack-shell-source.nix"

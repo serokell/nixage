@@ -50,6 +50,7 @@ executables:
       - nixage
 
       - directory
+      - filepath
       - optparse-applicative
       - process
       - temporary
@@ -79,6 +80,7 @@ tests:
     - tasty
     - tasty-golden
     - tasty-smallcheck
+    - tuple
     - yaml
 
 data-files: data/stack-shell.nix

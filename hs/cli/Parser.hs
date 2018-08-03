@@ -2,10 +2,9 @@ module Parser where
 
 -- |  Nixage cli command parsers
 --
+import Options.Applicative (CommandFields, Mod, Parser, command, commandGroup, forwardOptions,
+                            hsubparser, info, metavar, optional, progDesc, strArgument)
 import Universum
-import Options.Applicative ( Parser, info, progDesc, hsubparser, command
-                           , forwardOptions, strArgument, Mod, CommandFields
-                           , optional, metavar, commandGroup)
 
 import Types
 
@@ -77,11 +76,7 @@ convertOutPs =
         <$> (strArgument $ metavar "stack-yaml")
         <*> (strArgument $ metavar "snapshot-yaml")
         <*> (strArgument $ metavar "stack-shell")
-      , StackConvertOut "stack.yaml" "snapshot.yaml" "stack-shell.nix"
-      )
-    , ( "to-nix"
-      , pure NixConvertOut
-      , NixConvertOut
+      , StackConvertOut "stack.yaml" "snapshot.yaml" "stack-shell/stack-shell.nix"
       )
     , ( "to-nix"
       , pure NixConvertOut

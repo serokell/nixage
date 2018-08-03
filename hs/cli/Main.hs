@@ -1,8 +1,8 @@
 import Universum
 
 import Options.Applicative (execParser, fullDesc, header, helper, info, progDesc)
-import System.Directory (copyFile)
-import System.IO.Temp (withSystemTempFile, withTempFile)
+import System.FilePath.Posix ((</>))
+import System.IO.Temp (withSystemTempFile, withTempDirectory, withTempFile)
 import System.Process (createProcess, delegate_ctlc, proc, waitForProcess)
 
 import Nixage.Convert.FromYaml (decodeFromYaml)
@@ -33,10 +33,10 @@ stackAction args = do
     projectNative <- decodeFromYaml "project.yaml"
     withSystemTempFile "nixage-stack-snapshot.yaml" $ \snapshotPath _ ->
       withTempFile "." "nixage-stack.yaml" $ \stackPath _ -> do
-        withTempFile "." "stack-shell.nix" $ \stackShellPath _ -> do
-          stackShellSource <- liftIO $ getDataFileName "data/stack-shell.nix"
-          liftIO $ copyFile stackShellSource stackShellPath
-          encodeToStack stackPath snapshotPath stackShellPath projectNative
+        withTempDirectory "." "nixage-stack-shell-dir" $ \stackShellDir -> do
+          stackShellSourcePath <- liftIO $ getDataFileName "data/stack-shell.nix"
+          let stackShellPath = stackShellDir </> "stack-shell.nix"
+          encodeToStack stackPath snapshotPath stackShellPath stackShellSourcePath projectNative
           let  args' = ["--stack-yaml", toText stackPath] <> args
           liftIO $ do
               (_,_,_,handle) <- createProcess $
@@ -50,7 +50,8 @@ convertAction (ConvertArgs convertIn convertOut) = do
       YamlConvertIn yamlPath -> decodeFromYaml (toString yamlPath)
     case convertOut of
       StackConvertOut stackPath snapshotPath stackShellPath -> do
+        stackShellSourcePath <- liftIO $ getDataFileName "data/stack-shell.nix"
         encodeToStack (toString stackPath) (toString snapshotPath)
-                      (toString stackShellPath) projectNative
+                      (toString stackShellPath) (toString stackShellSourcePath) projectNative
       NixConvertOut -> do
           print $ projectNativeToPrettyNix projectNative
