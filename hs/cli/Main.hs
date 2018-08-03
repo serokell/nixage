@@ -7,7 +7,7 @@ import System.Process (createProcess, delegate_ctlc, proc, waitForProcess)
 
 import Nixage.Convert.FromYaml (decodeFromYaml)
 import Nixage.Convert.Nix (projectNativeToPrettyNix)
-import Nixage.Convert.Stack (encodeToStack)
+import Nixage.Convert.Stack (StackFilesInfo (..), encodeToStack)
 import Paths_nixage (getDataFileName)
 
 import Parser
@@ -36,7 +36,8 @@ stackAction args = do
         withTempDirectory "." "nixage-stack-shell-dir" $ \stackShellDir -> do
           stackShellSourcePath <- liftIO $ getDataFileName "data/stack-shell.nix"
           let stackShellPath = stackShellDir </> "stack-shell.nix"
-          encodeToStack stackPath snapshotPath stackShellPath stackShellSourcePath projectNative
+              stackFilesInfo = StackFilesInfo snapshotPath stackShellPath stackShellSourcePath "./.."
+          encodeToStack stackPath stackFilesInfo projectNative
           let  args' = ["--stack-yaml", toText stackPath] <> args
           liftIO $ do
               (_,_,_,handle) <- createProcess $
@@ -51,7 +52,8 @@ convertAction (ConvertArgs convertIn convertOut) = do
     case convertOut of
       StackConvertOut stackPath snapshotPath stackShellPath -> do
         stackShellSourcePath <- liftIO $ getDataFileName "data/stack-shell.nix"
-        encodeToStack (toString stackPath) (toString snapshotPath)
-                      (toString stackShellPath) (toString stackShellSourcePath) projectNative
+        let stackFilesInfo =
+                StackFilesInfo snapshotPath stackShellPath stackShellSourcePath "./."
+        encodeToStack (toString stackPath) stackFilesInfo projectNative
       NixConvertOut -> do
           print $ projectNativeToPrettyNix projectNative
