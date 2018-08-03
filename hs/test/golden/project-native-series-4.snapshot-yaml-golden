@@ -1,0 +1,4 @@
+packages:
+- ! '-'
+name: nixage-stack-snapshot
+resolver: ''

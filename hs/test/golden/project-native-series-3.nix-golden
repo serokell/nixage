@@ -1,0 +1,9 @@
+{
+  resolver = "";
+  nixpkgs = {
+    url = "";
+    sha256 = "";
+  };
+  packages = {};
+  extra-deps = {};
+}

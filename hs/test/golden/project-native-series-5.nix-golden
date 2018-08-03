@@ -1,0 +1,9 @@
+{
+  resolver = "a";
+  stackage = {
+    url = "";
+    sha256 = "";
+  };
+  packages = {};
+  extra-deps = {};
+}
