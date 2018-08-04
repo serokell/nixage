@@ -43,27 +43,27 @@ let
   extra-deps = self: super:
     mapAttrs (resolveExtraDep self super) proj.extra-deps;
 
-  nixageFilter = root: name: type:
+  nixageFilter = name: type:
     let
-      baseName = baseNameOf (toString name);
-      inRoot = dirOf name == toString root;
-      packageLocPaths = mapAttrsToList (_: locPath: /. + locPath) proj.packages;
-      match = p: (/. + name) == root + p;
+      baseName = baseNameOf name;
+      inRoot = dirOf name == toString proj.root;
+      pkgStackWork = mapAttrsToList (_: locPath: locPath + "/.stack-work") proj.packages;
+      match = p: name == toString (proj.root + ("/" + p));
       matchDir = p: type == "directory" && match p;
     in ! (
-         matchDir /.stack-work
-      || (any matchDir packageLocPaths)
-      || match /stack.yaml
+         matchDir ".stack-work"
+      || any matchDir pkgStackWork
+      || match "stack.yaml"
 
-      || matchDir /dist
-      || matchDir /dist-newstyle
+      || matchDir "dist"
+      || matchDir "dist-newstyle"
       || inRoot && hasPrefix ".ghc.environment" baseName
-      || match /cabal.project
-      || match /cabal.project.local
+      || match "cabal.project"
+      || match "cabal.project.local"
     );
 
   projectSrc = cleanSourceWith {
-    filter = nixageFilter proj.root;
+    filter = nixageFilter;
     src = cleanSource proj.root;
   };
 
