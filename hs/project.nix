@@ -1,8 +1,8 @@
 {
   resolver = "lts-11.14";
   nixpkgs = {
-    url = "https://github.com/nixos/nixpkgs/archive/14a9ca27e69e33ac8ffb708de08883f8079f954a.tar.gz";
-    sha256 = "1grsq8mcpl88v6kz8dp0vsybr0wzfg4pvhamj42dpd3vgr93l2ib";
+    url = "https://github.com/nixos/nixpkgs/archive/d1ae60cbad7a49874310de91cd17708b042400c8.tar.gz";
+    sha256 = "0a1w4702jlycg2ab87m7n8frjjngf0cis40lyxm3vdwn7p4fxikz";
   };
   packages = { nixage = "."; };
   extra-deps = {
