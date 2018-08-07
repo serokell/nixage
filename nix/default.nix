@@ -3,6 +3,7 @@
 , config ? {}
 , overrides ? (_: _: {})
 , haskellOverrides ? (_: _: {})
+, exposeNixage ? false
 }:
 
 let
@@ -26,15 +27,15 @@ let
       proj = { extra-deps = {}; } // proj' // { inherit root; };
 
       nixageProj = nixagePackages proj;
-    in
-      nixageProj.target // {
+      internalAttrs = {
         _pkgs = nixageProj.projPkgs;
         _haskellPackages = nixageProj.haskellPackages;
         _target = nixageProj.target;
         _stack-yaml = toStack proj;
         _prefetch-incomplete = prefetchAllIncomplete proj;
       };
-
+    in
+      nixageProj.target // (if exposeNixage then internalAttrs else {});
 in {
   inherit pkgs;
 
