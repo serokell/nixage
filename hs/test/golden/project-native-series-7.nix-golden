@@ -1,0 +1,5 @@
+{
+  resolver = "b";
+  packages = {};
+  extra-deps = {};
+}

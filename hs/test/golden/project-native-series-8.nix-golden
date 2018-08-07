@@ -1,0 +1,6 @@
+{
+  resolver = "";
+  packages = {};
+  extra-deps = {};
+  ghc-options = {};
+}

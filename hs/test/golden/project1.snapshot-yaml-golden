@@ -1,0 +1,4 @@
+packages:
+- monadlist-0.0.2
+name: nixage-stack-snapshot
+resolver: lts-11.14

@@ -1,0 +1,7 @@
+nix:
+  enable: true
+  shell-file: test-stack-shell.nix
+ghc-options: null
+packages:
+- ''
+resolver: test-snapshot.yaml

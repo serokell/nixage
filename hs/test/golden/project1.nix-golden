@@ -1,0 +1,14 @@
+{
+  resolver = "lts-11.14";
+  nixpkgs = {
+    url = "nixpkgs-url";
+    sha256 = "nixpkgs-sha";
+  };
+  packages = {
+    nixage = ".";
+    nixage2 = ".";
+  };
+  extra-deps = {
+    monadlist = "0.0.2";
+  };
+}

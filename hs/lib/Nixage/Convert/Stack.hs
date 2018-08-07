@@ -22,16 +22,16 @@ data StackExtraDepVersion =
 
 -- | Stack snapshot (name, resolver, packages)
 data StackCustomSnapshot = StackCustomSnapshot
-    { scsName     :: Text
-    , scsResolver :: Text
-    , scsPackages :: HashMap PackageName StackExtraDepVersion
-    } deriving Show
+    Text                                        -- Snapshot name
+    Text                                        -- Resolver
+    (HashMap PackageName StackExtraDepVersion)  -- Packages (extra-deps)
+    deriving Show
 
 data StackConfig = StackConfig
-    { scStackCustomSnapshot :: StackCustomSnapshot
-    , scPackages            :: HashMap PackageName FilePath
-    , scGhcOptions          :: Maybe GhcOptions
-    } deriving Show
+    StackCustomSnapshot                -- Snapshot
+    (HashMap PackageName FilePath)     -- Packages
+    (Maybe GhcOptions)                 -- Ghc options
+    deriving Show
 
 instance ToJSON StackCustomSnapshot where
     toJSON (StackCustomSnapshot name resolver packages) =

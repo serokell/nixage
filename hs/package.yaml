@@ -33,6 +33,7 @@ library:
     - ansi-wl-pprint
     - containers
     - hnix
+    - smallcheck
     - text
     - unordered-containers
     - yaml
@@ -56,6 +57,29 @@ executables:
 
     ghc-options:
       - -threaded
+
+
+tests:
+  nixage-test:
+    main:                Test.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - universum
+
+    - nixage
+
+    - bytestring
+    - filepath
+    - smallcheck
+    - tasty
+    - tasty-golden
+    - tasty-smallcheck
+    - yaml
 
 data-dir: data
 data-files: stack-shell.nix
