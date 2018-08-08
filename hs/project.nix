@@ -1,5 +1,5 @@
 {
-  resolver = "lts-11.14";
+  resolver = "lts-12.2";
   packages = { nixage = "."; };
   extra-deps = {
     aeson-options = "0.0.0";
