@@ -39,5 +39,5 @@ in {
   inherit pkgs;
 
   buildNixProject  = root: makeNixageProj (import (root + "/project.nix")) root;
-  buildYamlProject = root: makeNixageProj (importYaml (root + "/project.yaml")) root;
+  buildYamlProject = root: makeNixageProj (importYaml root) root;
 }
