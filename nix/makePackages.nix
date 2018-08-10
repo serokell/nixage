@@ -3,7 +3,8 @@
 let
   inherit (builtins) getAttr;
   inherit (pkgs.lib)
-    any cleanSource cleanSourceWith composeExtensions foldr hasPrefix id mapAttrs mapAttrsToList warn;
+    any attrValues cleanSource cleanSourceWith composeExtensions filterAttrs foldr
+    hasPrefix id mapAttrs mapAttrsToList warn;
   inherit (pkgs.haskell.lib) overrideCabal;
 
   inherit (import ./extraDeps { inherit pkgs; }) depNeedsPrefetch resolveExtraDep;
@@ -30,6 +31,7 @@ let
 
   stackagePackages = projPkgs.haskell.packages.stackage."${resolver}".override {
     overrides = foldr composeExtensions (_:_:{}) [
+      globalConfigureFlags
       speedupDeps
       extra-deps
       local-packages
@@ -45,8 +47,35 @@ let
     });
   };
 
+  globalConfigureFlags = self: super: {
+    mkDerivation = drv: super.mkDerivation (drv // {
+      configureFlags = with configureFlags'; everything ++ package drv.pname;
+    });
+  };
+
   extra-deps = self: super:
     mapAttrs (resolveExtraDep self super) proj.extra-deps;
+
+  configureFlags' =
+    let
+      mkGhcOptionFlag = flag: "--ghc-option=" + flag;
+    in {
+      locals = map mkGhcOptionFlag (
+        if proj ? ghc-options."$locals"
+        then [ proj.ghc-options."$locals" ] else []
+      );
+
+      everything = map mkGhcOptionFlag (
+        if proj ? ghc-options."$everything"
+        then [ proj.ghc-options."$everything" ] else []
+      );
+
+      package = p: map mkGhcOptionFlag (
+        if proj ? ghc-options
+        then attrValues (filterAttrs (p': _: p' == p) proj.ghc-options)
+        else []
+      );
+    };
 
   nixageFilter = name: type:
     let
@@ -80,6 +109,7 @@ let
         doHaddock = true;
         # HACK: make it easier to build packages without a license yet
         license = pkgs.lib.licenses.free;
+        configureFlags = with configureFlags'; everything ++ locals ++ package name;
       };
       derivationOverrides = {
         strictDeps = true;
