@@ -41,7 +41,7 @@ type family XProject x :: *
 -- | Extensible package version specification
 data ExtraDepVersion x
     = HackageDepVersion !(XHackageDepVersion x) PackageVersion
-    | SourceDepVersion !(XSourceDepVersion x) ExternalSource NixHash (Maybe FilePath)
+    | SourceDepVersion !(XSourceDepVersion x) ExternalSource (Maybe NixHash) (Maybe FilePath)
     | XExtraDepVersion !(XXExtraDepVersion x)
   deriving (Generic)
 
