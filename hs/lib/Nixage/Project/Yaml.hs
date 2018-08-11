@@ -56,18 +56,18 @@ pattern HackageDepVersionYaml :: PackageVersion
 pattern HackageDepVersionYaml pv = HackageDepVersion () pv
 
 pattern SourceDepVersionYaml :: ExternalSource
-                             -> NixHash
+                             -> Maybe NixHash
                              -> Maybe FilePath
                              -> ExtraDepVersion AstYaml
-pattern SourceDepVersionYaml es nh msd = SourceDepVersion () es nh msd
+pattern SourceDepVersionYaml es mnh msd = SourceDepVersion () es mnh msd
 
 instance FromJSON (ExtraDepVersion AstYaml) where
     parseJSON (String s) = pure $ HackageDepVersionYaml s
     parseJSON (Object v) =
         SourceDepVersionYaml
             <$> externalSourceP
-            <*> v .: "sha256"
-            <*> v .: "subdir"
+            <*> v .:? "sha256"
+            <*> v .:? "subdir"
       where
         externalSourceP =
             GitSource
@@ -90,6 +90,6 @@ projectYamlToProjectNative (Project () r mnv msv ps eds mgo) =
     ProjectNative r mnv msv ps eds' mgo
   where
     eds' = eds <&> \case
-      HackageDepVersion () v        -> HackageDepVersionNative v
-      SourceDepVersion () es nh msb -> SourceDepVersionNative es nh msb
-      XExtraDepVersion v            -> absurd v
+      HackageDepVersion () v         -> HackageDepVersionNative v
+      SourceDepVersion () es mnh msb -> SourceDepVersionNative es mnh msb
+      XExtraDepVersion v             -> absurd v
