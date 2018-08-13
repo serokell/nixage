@@ -20,7 +20,11 @@ let
   makeNixageProj = proj': root:
     let
       # Set defaults and root
-      proj = { extra-deps = {}; } // proj' // { inherit root; };
+      proj = {
+        extra-deps = {};
+        nixpkgs-stackage = import ./nixpkgs-stackage.nix;
+        nixpkgs = import ./nixpkgs.nix;
+      } // proj' // { inherit root; };
 
       nixageProj = nixagePackages proj;
       _nixage = {
