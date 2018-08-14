@@ -11,19 +11,9 @@ let
   inherit (import ./stackage.nix) fixResolverName;
   inherit (import ./upstream.nix { inherit pkgs; }) callCabal2nix;
 
-  stackageSrc =
-    if proj ? nixpkgs-stackage
-    then proj.nixpkgs-stackage
-    else import ./nixpkgs-stackage.nix;
-
-  nixpkgsSrc =
-    if proj ? nixpkgs
-    then proj.nixpkgs
-    else import ./nixpkgs.nix;
-
-  projPkgs = import (fetchTarball nixpkgsSrc) {
+  projPkgs = import (fetchTarball proj.nixpkgs) {
     inherit config system;
-    overlays = [ overrides (import (fetchTarball stackageSrc)) ];
+    overlays = [ overrides (import (fetchTarball proj.nixpkgs-stackage)) ];
   };
 
   resolver = fixResolverName proj.resolver;
