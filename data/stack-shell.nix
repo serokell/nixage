@@ -1,6 +1,11 @@
 root:
 let
-  x = import (root + "/default.nix") { exposeNixage = true; };
+  defaultNixage = let nixage = import ../nix { exposeNixage = true; };
+    in nixage.buildYamlProject root;
+  projDefaultNix = root + "/default.nix";
+  x = if builtins.pathExists projDefaultNix
+    then import projDefaultNix { exposeNixage = true; }
+    else defaultNixage;
   pkgs = x._nixage.pkgs;
   stackCmd = ''stack --internal-re-exec-version="${pkgs.stack.version}"'';
 in x._nixage.haskellPackages.shellFor {

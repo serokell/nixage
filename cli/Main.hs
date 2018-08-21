@@ -34,7 +34,7 @@ stackAction args = do
     withSystemTempFile "nixage-stack-snapshot.yaml" $ \snapshotPath snapshotH ->
       withTempFile "." "nixage-stack.yaml" $ \stackPath stackH -> do
         withTempFile "." "nixage-stack-shell.nix" $ \stackShellPath stackShellH -> do
-          stackShellSourcePath <- liftIO $ getDataFileName "stack-shell.nix"
+          stackShellSourcePath <- liftIO $ getDataFileName "data/stack-shell.nix"
           let stackFilesInfo = StackFilesInfo snapshotPath stackShellPath stackShellSourcePath "./."
           liftIO $ hClose stackShellH >> hClose stackH >> hClose snapshotH
           encodeToStack stackPath stackFilesInfo projectNative
@@ -51,7 +51,7 @@ convertAction (ConvertArgs convertIn convertOut) = do
       YamlConvertIn yamlPath -> decodeFromYaml (toString yamlPath)
     case convertOut of
       StackConvertOut stackPath snapshotPath stackShellPath -> do
-        stackShellSourcePath <- liftIO $ getDataFileName "stack-shell.nix"
+        stackShellSourcePath <- liftIO $ getDataFileName "data/stack-shell.nix"
         let stackFilesInfo = StackFilesInfo snapshotPath stackShellPath stackShellSourcePath "./."
         encodeToStack (toString stackPath) stackFilesInfo projectNative
       NixConvertOut -> do

@@ -3,7 +3,7 @@
 let
   inherit (builtins) genList head tail;
   inherit (pkgs.lib) concatMap concatStrings singleton;
-  inherit (import ../hs {}) nixage;
+  inherit (import ../default.nix {}) nixage;
 
 in {
   importYaml = path:
