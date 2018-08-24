@@ -58,5 +58,16 @@ executables:
     ghc-options:
       - -threaded
 
-data-dir: data
-data-files: stack-shell.nix
+data-dir: .
+data-files:
+  - default.nix
+  - project.nix
+  - package.yaml
+  - cli/*.hs
+  - lib/Nixage/*.hs
+  - lib/Nixage/Convert/*.hs
+  - lib/Nixage/Project/*.hs
+  - nix/*.nix
+  - nix/extraDeps/*.nix
+  - nix/tools/nix-prefetch-git
+  - data/stack-shell.nix
