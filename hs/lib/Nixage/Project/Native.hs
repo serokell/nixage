@@ -60,10 +60,10 @@ pattern HackageDepVersionNative :: PackageVersion
 pattern HackageDepVersionNative pv = HackageDepVersion () pv
 
 pattern SourceDepVersionNative :: ExternalSource
-                               -> NixHash
+                               -> Maybe NixHash
                                -> Maybe FilePath
                                -> ExtraDepVersion AstNixage
-pattern SourceDepVersionNative es nh msd = SourceDepVersion () es nh msd
+pattern SourceDepVersionNative es mnh msd = SourceDepVersion () es mnh msd
 
 
 instance Monad m => ToNix (ExtraDepVersion AstNixage) m NExpr where
@@ -72,8 +72,8 @@ instance Monad m => ToNix (ExtraDepVersion AstNixage) m NExpr where
         return $ mkNonRecSet $
             [ "git" $= mkStr git
             , "rev" $= mkStr rev
-            , "sha256" $= mkStr sha256
             ]
+            <> maybeToList (("sha256" $=) . mkStr <$> sha256)
             <> maybeToList (("subdir" $=) . mkStr . toText <$> subdir)
     toNix (XExtraDepVersion v) = absurd v
 
